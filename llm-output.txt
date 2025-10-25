@@ -1,0 +1,38 @@
+// 定义和生成例句节点
+{
+  "text": "1️⃣ 定义（第一性原理一句话）：\ntime — A fundamental, non-spatial continuum in which events occur in apparently irreversible succession from the past through the present to the future.\n\n2️⃣ 场景示例：\n- What time is the meeting scheduled for?\n- Time flies when you're having fun.\n- This is not the time for jokes; we need to be serious.\n- I've told you time and time again to lock the door.\n- The old tree has stood the test of time.\n- Do you have time to help me with this project?\n- He served his time in the military.\n- In Shakespeare's time, theater was a popular form of entertainment.\n- The athlete's timing was perfect for the jump.\n- It's time we said our goodbyes.",
+  "reasoning_content": "",
+  "usage": {
+    "prompt_tokens": 111,
+    "prompt_unit_price": "2",
+    "prompt_price_unit": "0.000001",
+    "prompt_price": "0.000222",
+    "completion_tokens": 159,
+    "completion_unit_price": "8",
+    "completion_price_unit": "0.000001",
+    "completion_price": "0.001272",
+    "total_tokens": 270,
+    "total_price": "0.001494",
+    "currency": "RMB",
+    "latency": 7.229449113000044
+  },
+  "finish_reason": "stop"
+}
+
+// 解析定义和例句节点
+{
+  "definition": "用于衡量事件发生顺序、持续长度或特定时刻的抽象概念。",
+  "sentences": [
+    "What time is it now?",
+    "I don't have enough time to finish this project.",
+    "Time flies when you're having fun.",
+    "This is the first time I've visited Paris.",
+    "The train arrives on time.",
+    "How many times have you watched that movie?",
+    "It's time to say goodbye.",
+    "She timed her presentation perfectly.",
+    "We lived through difficult times.",
+    "Time will tell if this was the right decision."
+  ],
+  "sentence_count": 10
+}
