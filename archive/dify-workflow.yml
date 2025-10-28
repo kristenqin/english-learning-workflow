@@ -1,0 +1,293 @@
+app:
+  description: 英语单词学习工作流 - 基于第一性原理生成定义和例句解释
+  icon: 📚
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 英语单词第一性原理学习
+
+kind: app
+
+version: 0.1.2
+
+workflow:
+  # ============================================
+  # 工作流入口：用户输入单词列表文本
+  # ============================================
+  start:
+    inputs:
+      - label: 单词列表
+        max_length: 10000
+        required: true
+        type: paragraph
+        variable: word_list_text
+    outputs:
+      - result
+
+  # ============================================
+  # 节点1: 代码节点 - 解析单词列表
+  # ============================================
+  nodes:
+    - data:
+        code: |
+          def main(word_list_text: str) -> dict:
+              """
+              将输入的文本按行分割成单词列表
+              """
+              lines = word_list_text.strip().split('\n')
+              words = [line.strip() for line in lines if line.strip()]
+
+              return {
+                  "words": words,
+                  "total_count": len(words)
+              }
+        code_language: python3
+        inputs:
+          word_list_text:
+            variable: sys.word_list_text
+        outputs:
+          words:
+            type: array[string]
+          total_count:
+            type: number
+        title: 解析单词列表
+      id: parse_words
+      type: code
+
+    # ============================================
+    # 节点2: 迭代节点 - 遍历每个单词
+    # ============================================
+    - data:
+        is_parallel: false
+        iteration_variable: parse_words.words
+        error_handle_mode: continue  # 出错继续处理下一个
+        title: 遍历单词列表
+      id: loop_words
+      type: iteration
+
+      # ============================================
+      # 迭代内部节点开始
+      # ============================================
+      children:
+        # --------------------------------------------
+        # 子节点1: LLM节点 - 生成第一性原理定义和例句
+        # --------------------------------------------
+        - data:
+            context:
+              enabled: false
+            model:
+              completion_params:
+                temperature: 0.7
+                max_tokens: 2000
+              mode: chat
+              name: deepseek-chat  # 使用 DeepSeek 模型
+              provider: deepseek
+            prompt_template:
+              - role: user
+                text: |-
+                  请以第一性原理的风格对单词 "{{#loop_words.item#}}" 给出定义，只用一句话总结其本质，不要多余分析或推导。
+                  然后列出至少 10 个不同场景下的具体使用例句，让我可以感受这个单词在不同语境下的使用感受。
+
+                  输出格式如下：
+                  1️⃣ 定义（第一性原理一句话）：
+                  {{#loop_words.item#}} — {一句话总结定义}
+
+                  2️⃣ 场景示例：
+                  - {示例句子1}
+                  - {示例句子2}
+                  …
+                  - {示例句子10}
+            title: 生成定义和例句
+            vision:
+              enabled: false
+          id: generate_definition
+          type: llm
+
+        # --------------------------------------------
+        # 子节点2: 代码节点 - 解析LLM输出
+        # --------------------------------------------
+        - data:
+            code: |
+              import re
+
+              def main(llm_output: str, current_word: str) -> dict:
+                  """
+                  解析LLM输出，提取定义和例句列表
+                  """
+                  try:
+                      lines = llm_output.strip().split('\n')
+
+                      # 提取定义
+                      definition = ""
+                      for line in lines:
+                          if '—' in line or '–' in line or '-' in line:
+                              # 提取 "单词 — 定义" 格式
+                              parts = re.split('[—–-]', line, 1)
+                              if len(parts) == 2:
+                                  definition = parts[1].strip()
+                                  break
+
+                      # 如果没找到，尝试其他方式
+                      if not definition:
+                          for i, line in enumerate(lines):
+                              if '定义' in line and i + 1 < len(lines):
+                                  definition = lines[i + 1].strip()
+                                  break
+
+                      # 提取例句（以 - 或 • 开头的行）
+                      sentences = []
+                      for line in lines:
+                          line = line.strip()
+                          if line.startswith('-') or line.startswith('•') or line.startswith('*'):
+                              sentence = line.lstrip('-•* ').strip()
+                              if sentence:
+                                  sentences.append(sentence)
+
+                      return {
+                          "definition": definition if definition else "定义提取失败",
+                          "sentences": sentences,
+                          "sentence_count": len(sentences)
+                      }
+                  except Exception as e:
+                      return {
+                          "definition": f"解析错误: {str(e)}",
+                          "sentences": [],
+                          "sentence_count": 0
+                      }
+            code_language: python3
+            inputs:
+              llm_output:
+                variable: generate_definition.text
+              current_word:
+                variable: loop_words.item
+            outputs:
+              definition:
+                type: string
+              sentences:
+                type: array[string]
+              sentence_count:
+                type: number
+            title: 解析定义和例句
+          id: parse_definition
+          type: code
+
+        # --------------------------------------------
+        # 子节点3: 迭代节点 - 遍历每个例句
+        # --------------------------------------------
+        - data:
+            is_parallel: false
+            iteration_variable: parse_definition.sentences
+            error_handle_mode: continue  # 出错继续处理下一个
+            title: 遍历例句列表
+          id: loop_sentences
+          type: iteration
+
+          # ============================================
+          # 第二层迭代内部节点开始
+          # ============================================
+          children:
+            # --------------------------------------------
+            # LLM节点 - 根据定义解释例句
+            # --------------------------------------------
+            - data:
+                context:
+                  enabled: false
+                model:
+                  completion_params:
+                    temperature: 0.7
+                    max_tokens: 500
+                  mode: chat
+                  name: deepseek-chat  # 使用 DeepSeek 模型
+                  provider: deepseek
+                prompt_template:
+                  - role: user
+                    text: |-
+                      对于下面的单词，我给出了第一性原理定义：
+                      {{#loop_words.item#}} — {{#parse_definition.definition#}}
+
+                      请根据这个定义解释句子中该单词的使用。只输出一句话，完整表达句子中该单词所体现的：
+
+                      动作（动词体现的行为或过程）
+
+                      状态（名词或形容词体现的存在或属性）
+
+                      影响/掌控关系（副词、抽象名词、功能词体现的作用、影响或关系）
+
+                      不要做额外解释或分析。
+
+                      例子：
+                      定义：take — 通过接触或意志将某物从外界引入自身掌控之中
+                      输入：He took a deep breath.
+                      输出：他通过意志将外界的空气引入身体，使之成为自身掌控的呼吸。
+
+                      现在句子：{{#loop_sentences.item#}}
+                title: 解释例句用法
+                vision:
+                  enabled: false
+              id: explain_sentence
+              type: llm
+
+            # --------------------------------------------
+            # HTTP节点 - 写入飞书多维表格
+            # --------------------------------------------
+            - data:
+                authorization:
+                  config:
+                    api_key: '{{#env.FEISHU_APP_SECRET#}}'  # 飞书应用密钥
+                    header: Authorization
+                    type: bearer
+                  type: api-key
+                body:
+                  data: |-
+                    {
+                      "fields": {
+                        "单词": "{{#loop_words.item#}}",
+                        "定义": "{{#parse_definition.definition#}}",
+                        "例句": "{{#loop_sentences.item#}}",
+                        "解释": "{{#explain_sentence.text#}}"
+                      }
+                    }
+                  type: json
+                headers: |-
+                  {
+                    "Content-Type": "application/json"
+                  }
+                method: post
+                # ⚠️ 需要替换为实际的飞书多维表格API地址
+                # 格式: https://open.feishu.cn/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records
+                url: 'https://open.feishu.cn/open-apis/bitable/v1/apps/YOUR_APP_TOKEN/tables/YOUR_TABLE_ID/records'
+                timeout:
+                  max_connect_timeout: 300
+                  max_read_timeout: 600
+                  max_write_timeout: 600
+                title: 写入飞书表格
+              id: write_to_feishu
+              type: http-request
+
+  # ============================================
+  # 工作流输出
+  # ============================================
+  outputs:
+    - value_selector:
+        - parse_words
+        - total_count
+      variable: result
+      type: string
+
+# ============================================
+# 环境变量配置说明
+# ============================================
+# 需要在 Dify 中配置以下环境变量：
+#
+# FEISHU_APP_ID: 飞书应用ID
+# FEISHU_APP_SECRET: 飞书应用密钥
+#
+# 飞书多维表格配置步骤：
+# 1. 访问 https://open.feishu.cn/app 创建应用
+# 2. 开通"多维表格"权限
+# 3. 创建多维表格，字段包括：单词(文本)、定义(文本)、例句(文本)、解释(文本)
+# 4. 获取 app_token 和 table_id（从表格URL中获取）
+# 5. 将 YOUR_APP_TOKEN 和 YOUR_TABLE_ID 替换为实际值
+#
+# 表格URL示例：
+# https://xxx.feishu.cn/base/YOUR_APP_TOKEN?table=YOUR_TABLE_ID
+# ============================================

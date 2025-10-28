@@ -58,15 +58,15 @@ tmp/
 temp/
 *.tmp
 
-# Project specific
-llm-output.txt
-archive/
-docs/requirements/
-Dify工作流搭建指南.md
-代码节点配置补充说明.md
-解析定义和例句.py
+# Test files
+test_*.txt
+*_test.txt
 
-# User data
+# User data files (preserve examples)
 words.txt
 my_words.txt
-test_words.txt
+user_words.txt
+
+# Build and deployment
+dist/
+*.egg-info/

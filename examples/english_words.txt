@@ -1,0 +1,10 @@
+take
+make
+give
+have
+keep
+think
+learn
+create
+explore
+grow
