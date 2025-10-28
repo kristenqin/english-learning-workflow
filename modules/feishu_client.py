@@ -170,8 +170,8 @@ class FeishuClient:
         try:
             token = self.get_access_token()
             
-            # 测试获取表格信息
-            url = f"{self.base_url}/bitable/v1/apps/{self.app_token}/tables/{self.table_id}"
+            # 测试获取表格列表（更可靠的测试方法）
+            url = f"{self.base_url}/bitable/v1/apps/{self.app_token}/tables"
             headers = {
                 "Authorization": f"Bearer {token}"
             }
