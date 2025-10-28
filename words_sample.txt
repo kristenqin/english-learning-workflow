@@ -1,0 +1,5 @@
+take
+make
+give
+have
+keep

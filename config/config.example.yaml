@@ -1,0 +1,32 @@
+# 英语学习工作流配置文件示例
+# 复制此文件为 config.yaml 并填入真实的API密钥
+
+# DeepSeek API 配置
+deepseek:
+  api_key: "YOUR_DEEPSEEK_API_KEY"  # 替换为您的 DeepSeek API Key
+  base_url: "https://api.deepseek.com"  # API 基础URL
+
+# 飞书API配置
+feishu:
+  app_id: "cli_xxxxxxxxxxxxx"       # 飞书应用ID
+  app_secret: "xxxxxxxxxxxxxxxx"    # 飞书应用密钥
+  app_token: "bascnABCDefgh1234567890"  # 多维表格App Token
+  table_id: "tblXYZ9876543210"      # 表格ID
+
+# 工作流配置
+workflow:
+  batch_write: false       # 是否批量写入（true=批量，false=实时）
+  delay_seconds: 1         # 每次API调用间隔（秒）
+  max_sentences: 10        # 每个单词最大例句数
+  retry_times: 3           # API调用失败重试次数
+  
+# 日志配置
+logging:
+  level: "INFO"            # 日志级别: DEBUG, INFO, WARNING, ERROR
+  file: "logs/workflow.log" # 日志文件路径
+  
+# 高级配置
+advanced:
+  llm_temperature: 0.7     # LLM创造性参数
+  llm_max_tokens: 2000     # LLM最大输出token数
+  parallel_processing: false # 是否并行处理（实验性功能）
