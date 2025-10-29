@@ -12,33 +12,52 @@
 ✅ **批量处理** - 支持批量处理多个单词  
 ✅ **多语言支持** - 支持中英文单词学习
 
-## 项目结构
+## 项目架构
+
+采用**分层架构设计**，清晰分离各层职责：
 
 ```
 english-learning-workflow/
-├── README.md                 # 项目说明
-├── requirements.txt          # 依赖包
-├── workflow.py              # 主工作流程序
-├── config/                  # 配置文件
-│   ├── config.example.yaml  # 配置模板
-│   └── config.yaml          # 实际配置（需要手动创建）
-├── modules/                 # 核心模块
-│   ├── word_parser.py       # 单词解析
-│   ├── llm_client.py        # LLM调用
-│   ├── content_parser.py    # 内容解析
-│   └── feishu_client.py     # 飞书API
-├── scripts/                 # 安装和设置脚本
-│   ├── install.sh           # 自动安装脚本
-│   └── setup.py            # 项目设置
-├── examples/                # 示例文件
-│   ├── english_words.txt    # 英文单词示例
-│   ├── chinese_words.txt    # 中文单词示例
-│   └── words_sample.txt     # 基础示例
-├── docs/                    # 文档
-│   ├── USAGE.md            # 详细使用指南
-│   └── Dify工作流搭建指南.md  # Dify平台对比
-└── archive/                 # 归档文件
+├── 📄 main.py                   # 🆕 新架构主入口
+├── 📄 requirements.txt          # 依赖包
+├── 📁 src/                      # 🆕 分层架构源代码
+│   ├── 🧠 domain/              # 领域层 - 核心业务逻辑
+│   │   ├── entities/           # 实体 (Word, ...)
+│   │   ├── value_objects/      # 值对象 (Definition, Sentence)
+│   │   ├── services/           # 领域服务
+│   │   └── repositories/       # 仓储接口
+│   ├── 📱 app/                 # 应用层 - 业务流程编排
+│   │   ├── workflows/          # 工作流编排
+│   │   ├── services/           # 应用服务
+│   │   └── handlers/           # 处理器
+│   ├── 🔧 infrastructure/       # 基础设施层 - 外部依赖
+│   │   ├── external_apis/      # 外部API (DeepSeek, 飞书)
+│   │   ├── storage/            # 存储相关
+│   │   ├── config/             # 配置管理
+│   │   └── container.py        # 依赖注入容器
+│   ├── 🖥️  interface/           # 接口层 - 用户交互
+│   │   ├── cli/                # 命令行接口
+│   │   └── api/                # 未来扩展API接口
+│   └── 📚 shared/              # 共享层 - 通用工具
+│       ├── utils/              # 工具函数
+│       ├── exceptions/         # 异常定义
+│       └── types/              # 类型定义
+├── 📁 config/                  # 配置文件
+├── 📁 scripts/                 # 安装和设置脚本
+├── 📁 examples/                # 示例文件
+├── 📁 docs/                    # 文档
+├── 📁 archive/                 # 归档文件
+└── 📁 backup/                  # 🆕 旧版本备份
+    └── old_flat_structure/     # 扁平架构备份
 ```
+
+### 🏗️ 架构优势
+
+- **🎯 单一职责**: 每层专注特定职责
+- **🔒 依赖倒置**: 高层不依赖低层实现
+- **🧩 松耦合**: 各层间通过接口交互
+- **🔧 易扩展**: 新功能容易添加
+- **🧪 易测试**: 各层可独立测试
 
 ## 快速开始
 
@@ -62,15 +81,15 @@ cp config/config.example.yaml config/config.yaml
 # 激活虚拟环境
 source venv/bin/activate
 
-# 测试单个单词
-python workflow.py test 学习
+# 🆕 新架构 (推荐)
+python main.py test 学习
 
 # 处理示例文件
-python workflow.py examples/english_words.txt
-python workflow.py examples/chinese_words.txt
+python main.py examples/english_words.txt
+python main.py examples/chinese_words.txt
 
 # 处理自定义单词文件
-python workflow.py your_words.txt
+python main.py your_words.txt
 ```
 
 ## 配置说明
